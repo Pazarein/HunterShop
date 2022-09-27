@@ -7,7 +7,7 @@
 Для реализации клиентского интерфейса были реализованы следующие основные классы: LoginForm, AdminForm, ClientForm, ManagerForm, OtkatForm, RegForm. Они все представляют собой основные формы для работы с базой данных.
 
 ## ER–диаграмма
-![alt tag](https://imgur.com/dft8ScJ)
+![alt tag](https://i.postimg.cc/y8gbJm7m/1.png)
 
 ## Даталогическая схема
-![alt tag](https://imgur.com/PQ7Ldc2)
+![alt tag](https://i.postimg.cc/NLhrdvrf/3.png)
