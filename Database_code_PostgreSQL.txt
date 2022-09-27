@@ -1,0 +1,239 @@
+CREATE TABLE categories
+(
+    id_categ serial NOT NULL PRIMARY KEY,
+    name_categ varchar(50) NOT NULL,
+    desc_categ varchar (250) 
+);
+CREATE TABLE customers
+(
+    id_cust serial NOT NULL PRIMARY KEY,
+    first_name_cust varchar (30) NOT NULL,
+    last_name_cust varchar (30) NOT NULL,
+    middle_name_cust varchar (30),
+    login_cust varchar varying(30) NOT NULL,
+    pass_cust varchar varying(50) NOT NULL,
+    email_cust varchar (50) NOT NULL,
+    phone_cust varchar (50) NOT NULL,
+    discount_amount_cust numeric NOT NULL
+);
+CREATE TABLE manufacturers
+(
+    id_manuf serial NOT NULL PRIMARY KEY,
+    country varchar (50) NOT NULL,
+    name_manuf varchar (50) NOT NULL,
+    desc_manuf varchar (250),
+);
+CREATE TABLE staff
+(
+    id_staff serial NOT NULL PRIMARY KEY,
+    first_name_staff varchar (30) NOT NULL,
+    last_name_staff varchar (30) NOT NULL,
+    middle_name_staff varchar (30),
+    login_staff varchar (30) NOT NULL,
+    pass_staff varchar (50) NOT NULL,
+    position_staff varchar (50) NOT NULL,
+    enhanced_rights boolean NOT NULL
+);
+CREATE TABLE products
+(
+    id_prod serial NOT NULL PRIMARY KEY,
+    id_categ integer NOT NULL references categories(id_categ),
+    id_manuf integer NOT NULL references manufacturers (id_manuf),
+    name_prod varchar (100) NOT NULL,
+    price integer NOT NULL,
+    weight integer NOT NULL,
+    amount integer NOT NULL,
+    license_requirement boolean NOT NULL,
+    desc_prod varchar (500),
+);
+CREATE TABLE orders_products
+(
+    id serial NOT NULL PRIMARY KEY,
+    id_order bigint NOT NULL NULL references orders (id_order),,
+    id_prod integer NOT NULL NULL references productss (id_prod),
+    amount integer NOT NULL
+);
+CREATE TABLE orders
+(
+    id_order bigint NOT NULL PRIMARY KEY,
+    id_cast integer NOT NULL references customers(id_cust),
+    id_staff integer references staff(id_staff),
+    grand_total numeric,
+    status varchar (50),
+    pickup_point varchar (100)
+);
+CREATE TABLE orders_otkat
+(
+    id_order bigint NOT NULL,
+    id_cast integer NOT NULL,
+    id_staff integer,
+    grand_total numeric,
+    status varchar (50),
+    pickup_point varchar (100),
+    edit varchar NOT NULL,
+    time_edit timestamp without time zone NOT NULL
+);
+CREATE TABLE products_otkat
+(
+    id_prod serial NOT NULL,
+    id_categ integer NOT NULL,
+    id_manuf integer NOT NULL,
+    name_prod varchar (100) NOT NULL,
+    price integer NOT NULL,
+    weight integer NOT NULL,
+    amount integer NOT NULL,
+    license_requirement boolean NOT NULL,
+    desc_prod varchar (500),
+    edit varchar NOT NULL,
+    time_edit timestamp without time zone NOT NULL
+);
+CREATE TABLE staff_otkat
+(
+    id_staff serial NOT NULL,
+    first_name_staff varchar (30) NOT NULL,
+    last_name_staff varchar (30) NOT NULL,
+    middle_name_staff varchar (30),
+    login_staff varchar (30) NOT NULL,
+    pass_staff varchar (50) NOT NULL,
+    position_staff varchar (50) NOT NULL,
+    enhanced_rights boolean NOT NULL,
+    edit varchar NOT NULL,
+    time_edit timestamp without time zone NOT NULL
+);
+CREATE TABLE customers
+(
+    id_cust serial NOT NULL,
+    first_name_cust varchar (30) NOT NULL,
+    last_name_cust varchar (30) NOT NULL,
+    middle_name_cust varchar (30),
+    login_cust varchar varying(30) NOT NULL,
+    pass_cust varchar varying(50) NOT NULL,
+    email_cust varchar (50) NOT NULL,
+    phone_cust varchar (50) NOT NULL,
+    discount_amount_cust numeric NOT NULL,
+    edit varchar NOT NULL,
+    time_edit timestamp without time zone NOT NULL
+);
+CREATE FUNCTION public.process_customers()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+IF (TG_OP = 'DELETE') THEN
+INSERT INTO customers_otkat SELECT OLD.*,'DELETE',now();
+RETURN OLD;
+ELSIF (TG_OP = 'UPDATE') THEN
+IF (OLD != NEW) THEN
+INSERT INTO customers_otkat SELECT OLD.*,'UPDATE',now();
+RETURN NEW;
+END IF;
+ELSIF (TG_OP = 'INSERT') THEN
+INSERT INTO customers_otkat SELECT NEW.*,'INSERT',now();
+RETURN NEW;
+END IF;
+RETURN NULL;
+END;
+$BODY$;
+CREATE TRIGGER customers_t
+    AFTER INSERT OR DELETE OR UPDATE 
+    ON public.customers
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.process_customers();
+CREATE FUNCTION public.process_orders()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+IF (TG_OP = 'DELETE') THEN
+INSERT INTO orders_otkat SELECT OLD.*,'DELETE',now();
+RETURN OLD;
+ELSIF (TG_OP = 'UPDATE') THEN
+IF (OLD != NEW) THEN
+INSERT INTO orders_otkat SELECT OLD.*,'UPDATE',now();
+RETURN NEW;
+END IF;
+ELSIF (TG_OP = 'INSERT') THEN
+INSERT INTO orders_otkat SELECT NEW.*,'INSERT',now();
+RETURN NEW;
+END IF;
+RETURN NULL;
+END;
+$BODY$;
+CREATE TRIGGER orders_t
+    AFTER INSERT OR DELETE OR UPDATE 
+    ON public.orders
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.process_orders();
+CREATE FUNCTION public.process_staff()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+IF (TG_OP = 'DELETE') THEN
+INSERT INTO staff_otkat SELECT OLD.*,'DELETE',now();
+RETURN OLD;
+ELSIF (TG_OP = 'UPDATE') THEN
+IF (OLD != NEW) THEN
+INSERT INTO staff_otkat SELECT OLD.*,'UPDATE',now();
+RETURN NEW;
+END IF;
+ELSIF (TG_OP = 'INSERT') THEN
+INSERT INTO staff_otkat SELECT NEW.*,'INSERT',now();
+RETURN NEW;
+END IF;
+RETURN NULL;
+END;
+$BODY$;
+CREATE TRIGGER staff_t
+    AFTER INSERT OR DELETE OR UPDATE 
+    ON public.staff
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.process_staff();
+CREATE FUNCTION public.process_products()
+    RETURNS trigger
+    LANGUAGE 'plpgsql'
+    COST 100
+    VOLATILE NOT LEAKPROOF
+AS $BODY$
+BEGIN
+IF (TG_OP = 'DELETE') THEN
+INSERT INTO products_otkat SELECT OLD.*,'DELETE',now();
+RETURN OLD;
+ELSIF (TG_OP = 'UPDATE') THEN
+IF (OLD != NEW) THEN
+INSERT INTO products_otkat SELECT OLD.*,'UPDATE',now();
+RETURN NEW;
+END IF;
+ELSIF (TG_OP = 'INSERT') THEN
+INSERT INTO products_otkat SELECT NEW.*,'INSERT',now();
+RETURN NEW;
+END IF;
+RETURN NULL;
+END;
+$BODY$;
+CREATE TRIGGER products_t
+    AFTER INSERT OR DELETE OR UPDATE 
+    ON public.products
+    FOR EACH ROW
+    EXECUTE PROCEDURE public.process_products();
+CREATE SEQUENCE public.id_orders_seq
+    INCREMENT 1
+    START 1
+    MINVALUE 1
+    MAXVALUE 9223372036854775807
+    CACHE 1;
+ALTER SEQUENCE public.id_orders_seq
+    OWNER TO postgres;
+ 
+
+
+
+
+
+ 
